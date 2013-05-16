@@ -10,7 +10,7 @@
 		"type": "git",
 		"url": "https://github.com/jivesoftware/jive-hubot-scripts"
 	},
-	"license": "MIT",
+	"license": "Apache 2.0",
 	"readmeFilename", "README.md",
 	"main": "index.coffee",
 	"dependencies": {
