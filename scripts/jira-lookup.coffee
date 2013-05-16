@@ -5,9 +5,9 @@
 #   None
 # 
 # Configuration:
-#   JIRA_LOOKUP_USERNAME
-#   JIRA_LOOKUP_PASSWORD
-#   JIRA_URL
+#   HUBOT_JIRA_LOOKUP_USERNAME
+#   HUBOT_JIRA_LOOKUP_PASSWORD
+#   HUBOT_JIRA_URL
 #
 # Commands:
 #   None
@@ -19,11 +19,11 @@
 module.exports = (robot) ->
   robot.hear /[a-zA-Z]{3,}-\d+/, (msg) ->
     issue = msg.match[0]
-    user = process.env.JIRA_LOOKUP_USERNAME
-    pass = process.env.JIRA_LOOKUP_PASSWORD
-    url = process.env.JIRA_URL
+    user = process.env.HUBOT_JIRA_LOOKUP_USERNAME
+    pass = process.env.HUBOT_JIRA_LOOKUP_PASSWORD
+    url = process.env.HUBOT_JIRA_URL
     auth = 'Basic ' + new Buffer(user + ':' + pass).toString('base64');
-    msg.http("#{url}/rest/api/latest/issue/#{issue}")
+    robot.http("#{url}/rest/api/latest/issue/#{issue}")
       .headers(Authorization: auth, Accept: 'application/json')
       .get() (err, res, body) ->
         try
