@@ -1,0 +1,19 @@
+{
+	"name": "jive-hubot-scripts",
+	"version": "0.0.1",
+	"description": "Jive external hubot scripts",
+	"keywords": [
+		"hubot"
+	],
+	"author": "Matthew Finlayson <matthew.finlayson@jivesoftware.com> (http://www.jivesoftware.com)",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/jivesoftware/jive-hubot-scripts"
+	},
+	"license": "MIT",
+	"readmeFilename", "README.md",
+	"main": "index.coffee",
+	"dependencies": {
+		"hubot": ">= 2.4.0"
+	}
+}
