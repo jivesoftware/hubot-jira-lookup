@@ -7,7 +7,7 @@
 # Configuration:
 #   HUBOT_JIRA_LOOKUP_USERNAME
 #   HUBOT_JIRA_LOOKUP_PASSWORD
-#   HUBOT_JIRA_URL
+#   HUBOT_JIRA_LOOKUP_URL
 #
 # Commands:
 #   None
@@ -21,7 +21,7 @@ module.exports = (robot) ->
     issue = msg.match[0]
     user = process.env.HUBOT_JIRA_LOOKUP_USERNAME
     pass = process.env.HUBOT_JIRA_LOOKUP_PASSWORD
-    url = process.env.HUBOT_JIRA_URL
+    url = process.env.HUBOT_JIRA_LOOKUP_URL
     auth = 'Basic ' + new Buffer(user + ':' + pass).toString('base64');
     robot.http("#{url}/rest/api/latest/issue/#{issue}")
       .headers(Authorization: auth, Accept: 'application/json')
