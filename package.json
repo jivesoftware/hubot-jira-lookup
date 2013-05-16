@@ -1,5 +1,5 @@
 {
-	"name": "jive-hubot-scripts",
+	"name": "hubot-jira-lookup",
 	"version": "0.0.1",
 	"description": "Jive external hubot scripts",
 	"keywords": [
