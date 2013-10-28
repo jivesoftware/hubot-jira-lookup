@@ -17,7 +17,7 @@
 #   Benjamin Sherman  <benjamin@jivesoftware.com> (http://www.jivesoftware.com)
 
 module.exports = (robot) ->
-  robot.hear /[a-zA-Z]{3,}-\d+/, (msg) ->
+  robot.hear /[a-zA-Z]{2,}-\d+/, (msg) ->
     issue = msg.match[0]
     user = process.env.HUBOT_JIRA_LOOKUP_USERNAME
     pass = process.env.HUBOT_JIRA_LOOKUP_PASSWORD
