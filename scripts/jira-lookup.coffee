@@ -29,10 +29,10 @@ module.exports = (robot) ->
         try
           json = JSON.parse(body)
           json_summary = ""
-          unless json.fields.summary.nil? or json.fields.summary.empty?
+          unless json.fields.summary is null or json.fields.summary.nil? or json.fields.summary.empty?
               json_summary = json.fields.summary
           json_description = ""
-          unless json.fields.description.nil? or json.fields.description.empty?
+          unless json.fields.description is null or json.fields.description.nil? or json.fields.description.empty?
               desc_array = json.fields.description.split("\n")
               json_description = ""
               for item in desc_array[0..2]
