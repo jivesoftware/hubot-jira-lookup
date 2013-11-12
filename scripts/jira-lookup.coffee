@@ -45,6 +45,6 @@ module.exports = (robot) ->
           unless json.fields.status is null or json.fields.status.nil? or json.fields.status.empty?
               unless json.fields.status.name.nil? or json.fields.status.name.empty?
                   json_status = json.fields.status.name
-          msg.send "Issue:       #{json.key}: #{json_summary}\n Description: #{json_description}\n Assignee:    #{json_assignee}\n Status:      #{json_status}\n Link:        https://jira.jivesoftware.com/browse/#{json.key}\n"
+          msg.send "Issue:       #{json.key}: #{json_summary}\n Description: #{json_description}\n Assignee:    #{json_assignee}\n Status:      #{json_status}\n Link:        #{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{json.key}\n"
         catch error
           msg.send "*sinister laugh*"
