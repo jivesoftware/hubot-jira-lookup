@@ -2,7 +2,7 @@
 
 ## Installation
 
-Add the package `hubot-jira-lookup` as a dependency in your Hubot `package.json file.
+Add the package `hubot-jira-lookup` as a dependency in your Hubot `package.json` file.
 
 	"dependencies": {
 		"hubot-jira-lookup": "git://github.com/jivesoftware/hubot-jira-lookup.git"
