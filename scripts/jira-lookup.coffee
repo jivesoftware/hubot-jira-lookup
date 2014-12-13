@@ -8,6 +8,7 @@
 #   HUBOT_JIRA_LOOKUP_USERNAME
 #   HUBOT_JIRA_LOOKUP_PASSWORD
 #   HUBOT_JIRA_LOOKUP_URL
+#   HUBOT_JIRA_LOOKUP_IGNORE_USERS (optional, format: "user1|user2", default is "jira|github")
 #
 # Commands:
 #   None
@@ -17,7 +18,15 @@
 #   Benjamin Sherman  <benjamin@jivesoftware.com> (http://www.jivesoftware.com)
 
 module.exports = (robot) ->
-  robot.hear /(?:^|\s)[a-zA-Z]{2,5}-[0-9]{1,5}(?:$|\s)/, (msg) ->
+
+  ignored_users = process.env.HUBOT_JIRA_LOOKUP_IGNORE_USERS
+  if ignored_users == undefined
+    ignored_users = "jira|github"
+
+  robot.hear /\b[a-zA-Z]{2,5}-[0-9]{1,5}\b/, (msg) ->
+
+    return if msg.message.user.name.match(new RegExp(ignored_users, "gi"))
+
     issue = msg.match[0]
     user = process.env.HUBOT_JIRA_LOOKUP_USERNAME
     pass = process.env.HUBOT_JIRA_LOOKUP_PASSWORD
