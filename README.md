@@ -23,3 +23,9 @@ There are three configuration values required for jira-lookup to work properly.
 * HUBOT_JIRA_LOOKUP_USERNAME
 * HUBOT_JIRA_LOOKUP_PASSWORD
 * HUBOT_JIRA_LOOKUP_URL
+
+There is also an optional configuration value.
+
+* HUBOT_JIRA_LOOKUP_IGNORE_USERS
+
+`HUBOT_JIRA_LOOKUP_IGNORE_USERS` will allow you to ignore messages from pre-defined users. Default is to ignore from users named "jira" and "github", casing is ignored.
