@@ -18,7 +18,7 @@ To enable the script, add the `hubot-jira-lookup` entry to the `external-scripts
 
 ## Configuration
 
-There are three configuration values required for jira-lookup to work properly. 
+There are three configuration values required for jira-lookup to work properly.
 
 * HUBOT_JIRA_LOOKUP_USERNAME
 * HUBOT_JIRA_LOOKUP_PASSWORD
@@ -29,3 +29,5 @@ There is also an optional configuration value.
 * HUBOT_JIRA_LOOKUP_IGNORE_USERS
 
 `HUBOT_JIRA_LOOKUP_IGNORE_USERS` will allow you to ignore messages from pre-defined users. Default is to ignore from users named "jira" and "github", casing is ignored.
+
+If you're using [Hubot Slack Attachments](inkel/hubot-slack-attachment), this script will use [Slack Attachments](https://api.slack.com/docs/attachments) to format its lookup result.
