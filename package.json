@@ -1,19 +1,28 @@
 {
-	"name": "hubot-jira-lookup",
-	"version": "0.0.1",
-	"description": "Jive external hubot scripts",
-	"keywords": [
-		"hubot"
-	],
-	"author": "Matthew Finlayson <matthew.finlayson@jivesoftware.com> (http://www.jivesoftware.com)",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/jivesoftware/jive-hubot-scripts"
-	},
-	"license": "Apache 2.0",
-	"readmeFilename": "README.md",
-	"main": "index.coffee",
-	"dependencies": {
-		"hubot": ">= 2.4.0"
-	}
+  "name": "hubot-jira-lookup",
+  "version": "0.0.1",
+  "description": "Jira lookup for Hubot, with extra Slack adapter support",
+  "keywords": [
+    "hubot",
+    "jira",
+    "slack"
+  ],
+  "author": "Matthew Finlayson <matthew.finlayson@jivesoftware.com> (http://www.jivesoftware.com)",
+  "contributors": [
+    {
+      "name": "Dustin Miller",
+      "email": "dustin@sharepointexperts.com",
+      "url": "http://sharepointexperience.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jivesoftware/hubot-jira-lookup"
+  },
+  "license": "Apache 2.0",
+  "readmeFilename": "README.md",
+  "main": "index.coffee",
+  "dependencies": {
+    "hubot": ">= 2.4.0"
+  }
 }
