@@ -30,4 +30,13 @@ There is also an optional configuration value.
 
 `HUBOT_JIRA_LOOKUP_IGNORE_USERS` will allow you to ignore messages from pre-defined users. Default is to ignore from users named "jira" and "github", casing is ignored.
 
+* HUBOT_JIRA_LOOKUP_INC_DESC
+
+`HUBOT_JIRA_LOOKUP_INC_DESC` will allow you to include 'Y' or exclude 'N' the description field from the jira report. (default to 'Y')
+
+* HUBOT_JIRA_LOOKUP_MAX_DESC_LEN
+
+`HUBOT_JIRA_LOOKUP_MAX_DESC_LEN` will allow you to display only the first 'x' characters from the description field
+
+
 If you're using [Hubot Slack Attachments](inkel/hubot-slack-attachment), this script will use [Slack Attachments](https://api.slack.com/docs/attachments) to format its lookup result.

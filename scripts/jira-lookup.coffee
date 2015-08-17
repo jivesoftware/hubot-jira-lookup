@@ -9,6 +9,9 @@
 #   HUBOT_JIRA_LOOKUP_PASSWORD
 #   HUBOT_JIRA_LOOKUP_URL
 #   HUBOT_JIRA_LOOKUP_IGNORE_USERS (optional, format: "user1|user2", default is "jira|github")
+#   HUBOT_JIRA_LOOKUP_INC_DESC
+#   HUBOT_JIRA_LOOKUP_MAX_DESC_LEN
+#   
 #
 # Commands:
 #   None
@@ -32,6 +35,13 @@ module.exports = (robot) ->
     user = process.env.HUBOT_JIRA_LOOKUP_USERNAME
     pass = process.env.HUBOT_JIRA_LOOKUP_PASSWORD
     url = process.env.HUBOT_JIRA_LOOKUP_URL
+
+    inc_desc = process.env.HUBOT_JIRA_LOOKUP_INC_DESC
+    if inc_desc == undefined
+       inc_desc = "Y"
+
+    max_len = process.env.HUBOT_JIRA_LOOKUP_MAX_DESC_LEN
+
     auth = 'Basic ' + new Buffer(user + ':' + pass).toString('base64')
     robot.http("#{url}/rest/api/latest/issue/#{issue}")
       .headers(Authorization: auth, Accept: 'application/json')
@@ -43,12 +53,14 @@ module.exports = (robot) ->
             unless json.fields.summary is null or json.fields.summary.nil? or json.fields.summary.empty?
               json_summary = json.fields.summary
           json_description = ""
-          if json.fields.description
+          if json.fields.description and inc_desc.toUpperCase() is "Y"
             json_description = "\n Description: "
             unless json.fields.description is null or json.fields.description.nil? or json.fields.description.empty?
               desc_array = json.fields.description.split("\n")
               for item in desc_array[0..2]
                 json_description += item
+              if max_len and json_description.length > max_len
+                 json_description = json_description.substring(0,max_len)                 
           json_assignee = ""
           if json.fields.assignee
             json_assignee = "\n Assignee:    "
