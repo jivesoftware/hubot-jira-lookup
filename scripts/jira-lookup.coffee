@@ -60,7 +60,7 @@ module.exports = (robot) ->
               for item in desc_array[0..2]
                 json_description += item
               if max_len and json_description.length > max_len
-                 json_description = json_description.substring(0,max_len)                 
+                 json_description = json_description.substring(0,max_len) + "..."
           json_assignee = ""
           if json.fields.assignee
             json_assignee = "\n Assignee:    "
@@ -73,6 +73,9 @@ module.exports = (robot) ->
             unless json.fields.status is null or json.fields.status.nil? or json.fields.status.empty?
               unless json.fields.status.name.nil? or json.fields.status.name.empty?
                 json_status += json.fields.status.name
+
+          
+          
           if process.env.HUBOT_SLACK_INCOMING_WEBHOOK?
             robot.emit 'slack.attachment',
               message: msg.message
