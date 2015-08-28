@@ -18,7 +18,9 @@ To enable the script, add the `hubot-jira-lookup` entry to the `external-scripts
 
 ## Configuration
 
-There are three configuration values required for jira-lookup to work properly.
+You can run this script in simple mode, which will only return a link to JIRA issue. It's usable in cases like: your JIRA instance is behind company firewall and Hubot instance it's outside. Or you just want such kind of behaviour. To enable this mode just set `HUBOT_JIRA_LOOKUP_SIMPLE=true`. Please note, that due to the lack of real conection to the JIRA it won't check if issue really exists.
+
+In other case - there are three configuration values required for full jira-lookup to work properly.
 
 * HUBOT_JIRA_LOOKUP_USERNAME
 * HUBOT_JIRA_LOOKUP_PASSWORD

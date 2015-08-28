@@ -9,6 +9,7 @@
 #   HUBOT_JIRA_LOOKUP_PASSWORD
 #   HUBOT_JIRA_LOOKUP_URL
 #   HUBOT_JIRA_LOOKUP_IGNORE_USERS (optional, format: "user1|user2", default is "jira|github")
+#   HUBOT_JIRA_LOOKUP_SIMPLE
 #
 # Commands:
 #   None
@@ -29,67 +30,71 @@ module.exports = (robot) ->
     return if msg.message.user.name.match(new RegExp(ignored_users, "gi"))
 
     issue = msg.match[0]
-    user = process.env.HUBOT_JIRA_LOOKUP_USERNAME
-    pass = process.env.HUBOT_JIRA_LOOKUP_PASSWORD
-    url = process.env.HUBOT_JIRA_LOOKUP_URL
-    auth = 'Basic ' + new Buffer(user + ':' + pass).toString('base64')
-    robot.http("#{url}/rest/api/latest/issue/#{issue}")
-      .headers(Authorization: auth, Accept: 'application/json')
-      .get() (err, res, body) ->
-        try
-          json = JSON.parse(body)
-          json_summary = ""
-          if json.fields.summary
-            unless json.fields.summary is null or json.fields.summary.nil? or json.fields.summary.empty?
-              json_summary = json.fields.summary
-          json_description = ""
-          if json.fields.description
-            json_description = "\n Description: "
-            unless json.fields.description is null or json.fields.description.nil? or json.fields.description.empty?
-              desc_array = json.fields.description.split("\n")
-              for item in desc_array[0..2]
-                json_description += item
-          json_assignee = ""
-          if json.fields.assignee
-            json_assignee = "\n Assignee:    "
-            unless json.fields.assignee is null or json.fields.assignee.nil? or json.fields.assignee.empty?
-              unless json.fields.assignee.name.nil? or json.fields.assignee.name.empty?
-                json_assignee += json.fields.assignee.name
-          json_status = ""
-          if json.fields.status
-            json_status = "\n Status:      "
-            unless json.fields.status is null or json.fields.status.nil? or json.fields.status.empty?
-              unless json.fields.status.name.nil? or json.fields.status.name.empty?
-                json_status += json.fields.status.name
-          if process.env.HUBOT_SLACK_INCOMING_WEBHOOK?
-            robot.emit 'slack.attachment',
-              message: msg.message
-              content:
-                text: 'Issue details'
-                fallback: 'Issue:       #{json.key}: #{json_summary}#{json_description}#{json_assignee}#{json_status}\n Link:        #{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{json.key}\n'
-                fields: [
-                  {
-                  title: 'Summary'
-                  value: "#{json_summary}"
-                  },
-                  {
-                  title: 'Description'
-                  value: "#{json_description}"
-                  },
-                  {
-                  title: 'Assignee'
-                  value: "#{json_assignee}"
-                  },
-                  {
-                  title: 'Status'
-                  value: "#{json_status}"
-                  },
-                  {
-                  title: 'Link'
-                  value: "<#{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{json.key}>"
-                  }
-                ]
-          else
-            msg.send "Issue:       #{json.key}: #{json_summary}#{json_description}#{json_assignee}#{json_status}\n Link:        #{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{json.key}\n"
-        catch error
-          console.log "Issue #{json.key} not found"
+
+    if process.env.HUBOT_JIRA_LOOKUP_SIMPLE is "true"
+      msg.send "Issue: #{issue} - #{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{issue}"
+    else
+      user = process.env.HUBOT_JIRA_LOOKUP_USERNAME
+      pass = process.env.HUBOT_JIRA_LOOKUP_PASSWORD
+      url = process.env.HUBOT_JIRA_LOOKUP_URL
+      auth = 'Basic ' + new Buffer(user + ':' + pass).toString('base64')
+      robot.http("#{url}/rest/api/latest/issue/#{issue}")
+        .headers(Authorization: auth, Accept: 'application/json')
+        .get() (err, res, body) ->
+          try
+            json = JSON.parse(body)
+            json_summary = ""
+            if json.fields.summary
+              unless json.fields.summary is null or json.fields.summary.nil? or json.fields.summary.empty?
+                json_summary = json.fields.summary
+            json_description = ""
+            if json.fields.description
+              json_description = "\n Description: "
+              unless json.fields.description is null or json.fields.description.nil? or json.fields.description.empty?
+                desc_array = json.fields.description.split("\n")
+                for item in desc_array[0..2]
+                  json_description += item
+            json_assignee = ""
+            if json.fields.assignee
+              json_assignee = "\n Assignee:    "
+              unless json.fields.assignee is null or json.fields.assignee.nil? or json.fields.assignee.empty?
+                unless json.fields.assignee.name.nil? or json.fields.assignee.name.empty?
+                  json_assignee += json.fields.assignee.name
+            json_status = ""
+            if json.fields.status
+              json_status = "\n Status:      "
+              unless json.fields.status is null or json.fields.status.nil? or json.fields.status.empty?
+                unless json.fields.status.name.nil? or json.fields.status.name.empty?
+                  json_status += json.fields.status.name
+            if process.env.HUBOT_SLACK_INCOMING_WEBHOOK?
+              robot.emit 'slack.attachment',
+                message: msg.message
+                content:
+                  text: 'Issue details'
+                  fallback: 'Issue:       #{json.key}: #{json_summary}#{json_description}#{json_assignee}#{json_status}\n Link:        #{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{json.key}\n'
+                  fields: [
+                    {
+                    title: 'Summary'
+                    value: "#{json_summary}"
+                    },
+                    {
+                    title: 'Description'
+                    value: "#{json_description}"
+                    },
+                    {
+                    title: 'Assignee'
+                    value: "#{json_assignee}"
+                    },
+                    {
+                    title: 'Status'
+                    value: "#{json_status}"
+                    },
+                    {
+                    title: 'Link'
+                    value: "<#{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{json.key}>"
+                    }
+                  ]
+            else
+              msg.send "Issue:       #{json.key}: #{json_summary}#{json_description}#{json_assignee}#{json_status}\n Link:        #{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{json.key}\n"
+          catch error
+            console.log "Issue #{json.key} not found"
