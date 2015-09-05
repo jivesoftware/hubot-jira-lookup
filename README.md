@@ -22,14 +22,11 @@ You can run this script in simple mode, which will only return a link to JIRA is
 
 In other case - there are three configuration values required for full jira-lookup to work properly.
 
-* HUBOT_JIRA_LOOKUP_USERNAME
-* HUBOT_JIRA_LOOKUP_PASSWORD
-* HUBOT_JIRA_LOOKUP_URL
+* `HUBOT_JIRA_LOOKUP_USERNAME`
+* `HUBOT_JIRA_LOOKUP_PASSWORD`
+* `HUBOT_JIRA_LOOKUP_URL`
 
-There is also an optional configuration value.
+There are also optional configuration values.
 
-* HUBOT_JIRA_LOOKUP_IGNORE_USERS
-
-`HUBOT_JIRA_LOOKUP_IGNORE_USERS` will allow you to ignore messages from pre-defined users. Default is to ignore from users named "jira" and "github", casing is ignored.
-
-If you're using [Hubot Slack Attachments](inkel/hubot-slack-attachment), this script will use [Slack Attachments](https://api.slack.com/docs/attachments) to format its lookup result.
+* `HUBOT_JIRA_LOOKUP_IGNORE_USERS` - allows you to ignore messages from pre-defined users. Default is to ignore from users named "jira" and "github", casing is ignored.
+* `HUBOT_SLACK_INCOMING_WEBHOOK` - allows you to output responses formatted as [Slack Attachments](https://api.slack.com/docs/attachments).
