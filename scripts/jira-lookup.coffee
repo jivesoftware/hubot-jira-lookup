@@ -11,7 +11,8 @@
 #   HUBOT_JIRA_LOOKUP_IGNORE_USERS (optional, format: "user1|user2", default is "jira|github")
 #   HUBOT_JIRA_LOOKUP_INC_DESC
 #   HUBOT_JIRA_LOOKUP_MAX_DESC_LEN
-#   
+#   HUBOT_JIRA_LOOKUP_SIMPLE
+#
 #
 # Commands:
 #   None
@@ -39,79 +40,102 @@ module.exports = (robot) ->
     return if msg.message.user.name.match(new RegExp(ignored_users, "gi"))
 
     issue = msg.match[0]
-    user = process.env.HUBOT_JIRA_LOOKUP_USERNAME
-    pass = process.env.HUBOT_JIRA_LOOKUP_PASSWORD
-    url = process.env.HUBOT_JIRA_LOOKUP_URL
 
-    inc_desc = process.env.HUBOT_JIRA_LOOKUP_INC_DESC
-    if inc_desc == undefined
-       inc_desc = "Y"
+    if process.env.HUBOT_JIRA_LOOKUP_SIMPLE is "true"
+      msg.send "Issue: #{issue} - #{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{issue}"
+    else
+      user = process.env.HUBOT_JIRA_LOOKUP_USERNAME
+      pass = process.env.HUBOT_JIRA_LOOKUP_PASSWORD
+      url = process.env.HUBOT_JIRA_LOOKUP_URL
 
-    max_len = process.env.HUBOT_JIRA_LOOKUP_MAX_DESC_LEN
+      inc_desc = process.env.HUBOT_JIRA_LOOKUP_INC_DESC
+      if inc_desc == undefined
+         inc_desc = "Y"
 
-    auth = 'Basic ' + new Buffer(user + ':' + pass).toString('base64')
-    robot.http("#{url}/rest/api/latest/issue/#{issue}")
-      .headers(Authorization: auth, Accept: 'application/json')
-      .get() (err, res, body) ->
-        try
-          json = JSON.parse(body)
-          json_summary = ""
-          if json.fields.summary
-            unless json.fields.summary is null or json.fields.summary.nil? or json.fields.summary.empty?
-              json_summary = json.fields.summary
-          json_description = ""
-          if json.fields.description and inc_desc.toUpperCase() is "Y"
-            json_description = "\n Description: "
-            unless json.fields.description is null or json.fields.description.nil? or json.fields.description.empty?
-              desc_array = json.fields.description.split("\n")
-              for item in desc_array[0..2]
-                json_description += item
-              if max_len and json_description.length > max_len
-                 json_description = json_description.substring(0,max_len) + "..."
-          json_assignee = ""
-          if json.fields.assignee
-            json_assignee = "\n Assignee:    "
-            unless json.fields.assignee is null or json.fields.assignee.nil? or json.fields.assignee.empty?
-              unless json.fields.assignee.name.nil? or json.fields.assignee.name.empty?
-                json_assignee += json.fields.assignee.name
-          json_status = ""
-          if json.fields.status
-            json_status = "\n Status:      "
-            unless json.fields.status is null or json.fields.status.nil? or json.fields.status.empty?
-              unless json.fields.status.name.nil? or json.fields.status.name.empty?
-                json_status += json.fields.status.name
+      max_len = process.env.HUBOT_JIRA_LOOKUP_MAX_DESC_LEN
 
-          
-          
-          if process.env.HUBOT_SLACK_INCOMING_WEBHOOK?
-            robot.emit 'slack.attachment',
-              message: msg.message
-              content:
-                text: 'Issue details'
-                fallback: 'Issue:       #{json.key}: #{json_summary}#{json_description}#{json_assignee}#{json_status}\n Link:        #{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{json.key}\n'
-                fields: [
-                  {
-                  title: 'Summary'
-                  value: "#{json_summary}"
-                  },
-                  {
-                  title: 'Description'
-                  value: "#{json_description}"
-                  },
-                  {
-                  title: 'Assignee'
-                  value: "#{json_assignee}"
-                  },
-                  {
-                  title: 'Status'
-                  value: "#{json_status}"
-                  },
-                  {
-                  title: 'Link'
-                  value: "<#{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{json.key}>"
-                  }
-                ]
-          else
-            msg.send "Issue:       #{json.key}: #{json_summary}#{json_description}#{json_assignee}#{json_status}\n Link:        #{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{json.key}\n"
-        catch error
-          console.log "Issue #{json.key} not found"
+      auth = 'Basic ' + new Buffer(user + ':' + pass).toString('base64')
+
+      robot.http("#{url}/rest/api/latest/issue/#{issue}")
+        .headers(Authorization: auth, Accept: 'application/json')
+        .get() (err, res, body) ->
+          try
+            json = JSON.parse(body)
+
+            data = {
+              'key': {
+                key: 'Key'
+                value: issue
+              }
+              'summary': {
+                key: 'Summary'
+                value: json.fields.summary || null
+              }
+              'link': {
+                key: 'Link'
+                value: "#{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{json.key}"
+              }
+              'description': {
+                key: 'Description',
+                value: json.fields.description || null
+              }
+              'assignee': {
+                key: 'Assignee',
+                value: (json.fields.assignee && json.fields.assignee.displayName) || 'Unassigned'
+              }
+              'reporter': {
+                key: 'Reporter',
+                value: (json.fields.reporter && json.fields.reporter.displayName) || null
+              }
+              'created': {
+                key: 'Created',
+                value: json.fields.created && (new Date(json.fields.created)).toLocaleString() || null
+              }
+              'status': {
+                key: 'Status',
+                value: (json.fields.status && json.fields.status.name) || null
+              }
+            }
+
+            fallback = "Issue:\t #{data.key.value}: #{data.summary.value}\n"
+            if data.description.value? and inc_desc.toUpperCase() is "Y"
+              if max_len and data.description.value?.length > max_len
+                fallback += "Description:\t #{data.description.value.substring(0,max_len)} ...\n"
+              else
+                fallback += "Description:\t #{data.description.value}\n"
+            fallback += "Assignee:\t #{data.assignee.value}\nStatus:\t #{data.status.value}\nLink:\t #{data.link.value}\n"
+
+            if process.env.HUBOT_SLACK_INCOMING_WEBHOOK?
+              robot.emit 'slack.attachment',
+                message: msg.message
+                content:
+                  fallback: fallback
+                  title: "#{data.key.value}: #{data.summary.value}"
+                  title_link: data.link.value
+                  text: data.description.value
+                  fields: [
+                    {
+                      title: data.reporter.key
+                      value: data.reporter.value
+                      short: true
+                    }
+                    {
+                      title: data.assignee.key
+                      value: data.assignee.value
+                      short: true
+                    }
+                    {
+                      title: data.status.key
+                      value: data.status.value
+                      short: true
+                    }
+                    {
+                      title: data.created.key
+                      value: data.created.value
+                      short: true
+                    }
+                  ]
+            else
+              msg.send fallback
+          catch error
+            console.log error
