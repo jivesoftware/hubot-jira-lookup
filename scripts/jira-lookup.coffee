@@ -28,14 +28,9 @@ module.exports = (robot) ->
   if ignored_users == undefined
     ignored_users = "jira|github"
 
-  ignored_regexp = new RegExp(ignored_users,"gi")
-
   console.log "Ignore Users: #{ignored_users}"
-  console.log "RegExp: #{ignored_reexp.toString}"
 
   robot.hear /\b[a-zA-Z]{2,12}-[0-9]{1,10}\b/, (msg) ->
-
-    console.log "User: #{msg.message.user.name}";
 
     return if msg.message.user.name.match(new RegExp(ignored_users, "gi"))
 
