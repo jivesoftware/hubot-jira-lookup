@@ -12,7 +12,7 @@
 #   HUBOT_JIRA_LOOKUP_INC_DESC
 #   HUBOT_JIRA_LOOKUP_MAX_DESC_LEN
 #   HUBOT_JIRA_LOOKUP_SIMPLE
-#
+#   HUBOI_JIRA_LOOKUP_TIMEOUT
 #
 # Commands:
 #   None
@@ -21,6 +21,29 @@
 #   Matthew Finlayson <matthew.finlayson@jivesoftware.com> (http://www.jivesoftware.com)
 #   Benjamin Sherman  <benjamin@jivesoftware.com> (http://www.jivesoftware.com)
 #   Dustin Miller <dustin@sharepointexperts.com> (http://sharepointexperience.com)
+
+
+## Prevent the bot sending the jira ticket details too often in any channel
+
+## Store when a ticket was reported to a channel
+# Key:   channelid-ticketid
+# Value: timestamp
+# 
+LastHeard = {}
+
+RecordLastHeard = (channel,ticket) ->
+  ts = new Date()
+  key = "#{channel}-#{ticket}"
+  LastHeard[key] = ts
+
+CheckLastHeard = (channel,ticket) ->
+  now = new Date()
+  key = "#{channel}-#{ticket}"
+  last = LastHeard[key]
+  timeout =  process.env.HUBOI_JIRA_LOOKUP_TIMEOUT
+  if (now - last) < (1000 * 60 * timeout)
+    return yes
+  no
 
 module.exports = (robot) ->
 
@@ -35,6 +58,10 @@ module.exports = (robot) ->
     return if msg.message.user.name.match(new RegExp(ignored_users, "gi"))
 
     issue = msg.match[0]
+
+    return if CheckLastHeard (msg.channel, issue)   #Heard too recently
+
+    RecordLastHeard (msg.channel,issue)
 
     if process.env.HUBOT_JIRA_LOOKUP_SIMPLE is "true"
       msg.send "Issue: #{issue} - #{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{issue}"
