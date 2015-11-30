@@ -22,13 +22,33 @@
 #   Benjamin Sherman  <benjamin@jivesoftware.com> (http://www.jivesoftware.com)
 #   Dustin Miller <dustin@sharepointexperts.com> (http://sharepointexperience.com)
 
+StylePrefStore = {}
+
+SetRoomStylePref = (robot, msg, pref) ->
+  room  = msg.message.user.reply_to || msg.message.user.room
+  StylePrefStore[room] = pref
+  msg.send "Jira Lookup Style Set To #{pref} For #{room}"
+
+GetRoomStylePref = (robot, msg) ->
+  room  = msg.message.user.reply_to || msg.message.user.room
+  def_style = process.env.HUBOT_JIRA_LOOKUP_STYLE || "long"
+  rm_style = StylePrefStore[room]
+  if rm_style
+    return rm_style
+  def_style
+  
+
 module.exports = (robot) ->
 
+  
   ignored_users = process.env.HUBOT_JIRA_LOOKUP_IGNORE_USERS
   if ignored_users == undefined
     ignored_users = "jira|github"
 
   console.log "Ignore Users: #{ignored_users}"
+
+  robot.respond /set jira_lookup_style (long|short)/, (msg) ->
+    SetRoomStylePref robot, msg, msg.match[0]
 
   robot.hear /\b[a-zA-Z]{2,12}-[0-9]{1,10}\b/, (msg) ->
 
@@ -92,44 +112,59 @@ module.exports = (robot) ->
               }
             }
 
-            fallback = "Issue:\t #{data.key.value}: #{data.summary.value}\n"
-            if data.description.value? and inc_desc.toUpperCase() is "Y"
-              if max_len and data.description.value?.length > max_len
-                fallback += "Description:\t #{data.description.value.substring(0,max_len)} ...\n"
-              else
-                fallback += "Description:\t #{data.description.value}\n"
-            fallback += "Assignee:\t #{data.assignee.value}\nStatus:\t #{data.status.value}\nLink:\t #{data.link.value}\n"
+            style = GetRoomStylePref robot, msg
+            
+            if style is "long"
+              fallback = "Issue:\t #{data.key.value}: #{data.summary.value}\n"
+              if data.description.value? and inc_desc.toUpperCase() is "Y"
+                if max_len and data.description.value?.length > max_len
+                  fallback += "Description:\t #{data.description.value.substring(0,max_len)} ...\n"
+                else
+                  fallback += "Description:\t #{data.description.value}\n"
+              fallback += "Assignee:\t #{data.assignee.value}\nStatus:\t #{data.status.value}\nLink:\t #{data.link.value}\n"
+            else
+              fallback = "#{data.key.value}: #{data.summary.value} [status #{data.status.value}; assigned to #{data.assignee.value} ] #{data.link.value}"
+            
 
             if process.env.HUBOT_SLACK_INCOMING_WEBHOOK?
-              robot.emit 'slack.attachment',
-                message: msg.message
-                content:
-                  fallback: fallback
-                  title: "#{data.key.value}: #{data.summary.value}"
-                  title_link: data.link.value
-                  text: data.description.value
-                  fields: [
-                    {
-                      title: data.reporter.key
-                      value: data.reporter.value
-                      short: true
-                    }
-                    {
-                      title: data.assignee.key
-                      value: data.assignee.value
-                      short: true
-                    }
-                    {
-                      title: data.status.key
-                      value: data.status.value
-                      short: true
-                    }
-                    {
-                      title: data.created.key
-                      value: data.created.value
-                      short: true
-                    }
-                  ]
+              if style is "long"
+                robot.emit 'slack.attachment',
+                  message: msg.message
+                  content:
+                    fallback: fallback
+                    title: "#{data.key.value}: #{data.summary.value}"
+                    title_link: data.link.value
+                    text: data.description.value
+                    fields: [
+                      {
+                        title: data.reporter.key
+                        value: data.reporter.value
+                        short: true
+                      }
+                      {
+                        title: data.assignee.key
+                        value: data.assignee.value
+                        short: true
+                      }
+                      {
+                        title: data.status.key
+                        value: data.status.value
+                        short: true
+                      }
+                      {
+                        title: data.created.key
+                        value: data.created.value
+                        short: true
+                      }
+                    ]
+              else
+                robot.emit 'slack.attachment',
+                  message: msg.message
+                  content:
+                    fallback: fallback
+                    title: "#{data.key.value}: #{data.summary.value}"
+                    title_link: data.link.value
+                    text: "status: #{data.status.value}; assigned: #{data.assignee.value}] "
             else
               msg.send fallback
           catch error
