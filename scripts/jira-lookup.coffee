@@ -15,7 +15,7 @@
 #
 #
 # Commands:
-#   None
+#   hubot set jira_lookup_style [long|short]
 #
 # Author:
 #   Matthew Finlayson <matthew.finlayson@jivesoftware.com> (http://www.jivesoftware.com)
@@ -27,6 +27,7 @@ StylePrefStore = {}
 SetRoomStylePref = (robot, msg, pref) ->
   room  = msg.message.user.reply_to || msg.message.user.room
   StylePrefStore[room] = pref
+  storePrefToBrain robot, room, pref
   msg.send "Jira Lookup Style Set To #{pref} For #{room}"
 
 GetRoomStylePref = (robot, msg) ->
@@ -37,9 +38,29 @@ GetRoomStylePref = (robot, msg) ->
     return rm_style
   def_style
   
+storePrefToBrain = (robot, room, pref) ->
+  robot.brain.data.jiralookupprefs[room] = pref
+
+syncPrefs = (robot) ->
+  nonCachedPrefs = difference(robot.brain.data.jiralookupprefs, StylePrefStore)
+  for own room, pref of nonCachedPrefs
+    StylePrefStore[room] = pref
+
+  nonStoredPrefs = difference(StylePrefStore, robot.brain.data.jiralookupprefs)
+  for own room, pref of nonStoredPrefs
+    storePrefToBrain robot, room, pref
+
+difference = (obj1, obj2) ->
+  diff = {}
+  for room, pref of obj1
+    diff[room] = pref if room !of obj2
+  return diff
+  
 
 module.exports = (robot) ->
-
+  robot.brain.data.jiralookupprefs or= {}
+  robot.brain.on 'loaded', =>
+    syncPrefs robot
   
   ignored_users = process.env.HUBOT_JIRA_LOOKUP_IGNORE_USERS
   if ignored_users == undefined
@@ -48,7 +69,7 @@ module.exports = (robot) ->
   console.log "Ignore Users: #{ignored_users}"
 
   robot.respond /set jira_lookup_style (long|short)/, (msg) ->
-    SetRoomStylePref robot, msg, msg.match[0]
+    SetRoomStylePref robot, msg, msg.match[1]
 
   robot.hear /\b[a-zA-Z]{2,12}-[0-9]{1,10}\b/, (msg) ->
 
@@ -164,7 +185,7 @@ module.exports = (robot) ->
                     fallback: fallback
                     title: "#{data.key.value}: #{data.summary.value}"
                     title_link: data.link.value
-                    text: "status: #{data.status.value}; assigned: #{data.assignee.value}] "
+                    text: "Status: #{data.status.value}; Assigned: #{data.assignee.value}"
             else
               msg.send fallback
           catch error
