@@ -28,5 +28,8 @@ In other case - there are three configuration values required for full jira-look
 
 There are also optional configuration values.
 
+* `HUBOT_JIRA_LOOKUP_INC_DESC` - allows you to include 'Y' or exclude 'N' the description field from the jira report. (default to 'Y')
+* `HUBOT_JIRA_LOOKUP_MAX_DESC_LEN` - allows you to display only the first 'x' characters from the description field
 * `HUBOT_JIRA_LOOKUP_IGNORE_USERS` - allows you to ignore messages from pre-defined users. Default is to ignore from users named "jira" and "github", casing is ignored.
 * `HUBOT_SLACK_INCOMING_WEBHOOK` - allows you to output responses formatted as [Slack Attachments](https://api.slack.com/docs/attachments).
+

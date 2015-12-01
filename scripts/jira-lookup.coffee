@@ -9,7 +9,10 @@
 #   HUBOT_JIRA_LOOKUP_PASSWORD
 #   HUBOT_JIRA_LOOKUP_URL
 #   HUBOT_JIRA_LOOKUP_IGNORE_USERS (optional, format: "user1|user2", default is "jira|github")
+#   HUBOT_JIRA_LOOKUP_INC_DESC
+#   HUBOT_JIRA_LOOKUP_MAX_DESC_LEN
 #   HUBOT_JIRA_LOOKUP_SIMPLE
+#
 #
 # Commands:
 #   None
@@ -25,6 +28,8 @@ module.exports = (robot) ->
   if ignored_users == undefined
     ignored_users = "jira|github"
 
+  console.log "Ignore Users: #{ignored_users}"
+
   robot.hear /\b[a-zA-Z]{2,12}-[0-9]{1,10}\b/, (msg) ->
 
     return if msg.message.user.name.match(new RegExp(ignored_users, "gi"))
@@ -37,6 +42,12 @@ module.exports = (robot) ->
       user = process.env.HUBOT_JIRA_LOOKUP_USERNAME
       pass = process.env.HUBOT_JIRA_LOOKUP_PASSWORD
       url = process.env.HUBOT_JIRA_LOOKUP_URL
+
+      inc_desc = process.env.HUBOT_JIRA_LOOKUP_INC_DESC
+      if inc_desc == undefined
+         inc_desc = "Y"
+
+      max_len = process.env.HUBOT_JIRA_LOOKUP_MAX_DESC_LEN
 
       auth = 'Basic ' + new Buffer(user + ':' + pass).toString('base64')
 
@@ -82,8 +93,11 @@ module.exports = (robot) ->
             }
 
             fallback = "Issue:\t #{data.key.value}: #{data.summary.value}\n"
-            if data.description.value?
-              fallback += "Description:\t #{data.description.value}\n"
+            if data.description.value? and inc_desc.toUpperCase() is "Y"
+              if max_len and data.description.value?.length > max_len
+                fallback += "Description:\t #{data.description.value.substring(0,max_len)} ...\n"
+              else
+                fallback += "Description:\t #{data.description.value}\n"
             fallback += "Assignee:\t #{data.assignee.value}\nStatus:\t #{data.status.value}\nLink:\t #{data.link.value}\n"
 
             if process.env.HUBOT_SLACK_INCOMING_WEBHOOK?
