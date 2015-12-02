@@ -31,5 +31,5 @@ There are also optional configuration values.
 * `HUBOT_JIRA_LOOKUP_INC_DESC` - allows you to include 'Y' or exclude 'N' the description field from the jira report. (default to 'Y')
 * `HUBOT_JIRA_LOOKUP_MAX_DESC_LEN` - allows you to display only the first 'x' characters from the description field
 * `HUBOT_JIRA_LOOKUP_IGNORE_USERS` - allows you to ignore messages from pre-defined users. Default is to ignore from users named "jira" and "github", casing is ignored.
+* `HUBOT_JIRA_LOOKUP_TIMEOUT` - allows you to set the time, in minutes, between mentions of a specific ticket in a specific channel/room. Defaults to 15 minutes
 * `HUBOT_SLACK_INCOMING_WEBHOOK` - allows you to output responses formatted as [Slack Attachments](https://api.slack.com/docs/attachments).
-

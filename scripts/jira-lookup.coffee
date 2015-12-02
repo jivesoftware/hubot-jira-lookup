@@ -12,7 +12,7 @@
 #   HUBOT_JIRA_LOOKUP_INC_DESC
 #   HUBOT_JIRA_LOOKUP_MAX_DESC_LEN
 #   HUBOT_JIRA_LOOKUP_SIMPLE
-#
+#   HUBOI_JIRA_LOOKUP_TIMEOUT
 #
 # Commands:
 #   hubot set jira_lookup_style [long|short]
@@ -21,6 +21,33 @@
 #   Matthew Finlayson <matthew.finlayson@jivesoftware.com> (http://www.jivesoftware.com)
 #   Benjamin Sherman  <benjamin@jivesoftware.com> (http://www.jivesoftware.com)
 #   Dustin Miller <dustin@sharepointexperts.com> (http://sharepointexperience.com)
+
+## Prevent the bot sending the jira ticket details too often in any channel
+
+## Store when a ticket was reported to a channel
+# Key:   channelid-ticketid
+# Value: timestamp
+# 
+LastHeard = {}
+
+RecordLastHeard = (robot,channel,ticket) ->
+  ts = new Date()
+  key = "#{channel}-#{ticket}"
+  LastHeard[key] = ts
+
+CheckLastHeard = (robot,channel,ticket) ->
+  now = new Date()
+  key = "#{channel}-#{ticket}"
+  last = LastHeard[key] || 0
+  timeout =  process.env.HUBOT_JIRA_LOOKUP_TIMEOUT || 15
+  limit = (1000 * 60 * timeout)
+  diff = now - last
+
+  @robot.logger.debug "Check: #{key} #{diff} #{limit}"
+  
+  if diff < limit
+    return yes
+  no
 
 StylePrefStore = {}
 
@@ -76,6 +103,13 @@ module.exports = (robot) ->
     return if msg.message.user.name.match(new RegExp(ignored_users, "gi"))
 
     issue = msg.match[0]
+    room  = msg.message.user.reply_to || msg.message.user.room
+    
+    @robot.logger.debug "Issue: #{issue} in channel #{room}"
+
+    return if CheckLastHeard(robot, room, issue)
+
+    RecordLastHeard robot, room, issue
 
     if process.env.HUBOT_JIRA_LOOKUP_SIMPLE is "true"
       msg.send "Issue: #{issue} - #{process.env.HUBOT_JIRA_LOOKUP_URL}/browse/#{issue}"
